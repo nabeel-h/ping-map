@@ -5,7 +5,7 @@ import MapGL from 'react-map-gl';
 import DeckGLOverlay from './deckgl-overlay.js';
 import json_data from './top_10_coords.json';
 import 'mapbox-gl/dist/mapbox-gl.css';
-
+import BarChart from './barChart.js';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibmFiZGV2IiwiYSI6ImNqZXJya25ocTBseGozM3A0Nnh4ZzU5b3kifQ.0g6m5X8PUkXrdZk3Qe4Lpw'; // eslint-disable-line
 
@@ -40,12 +40,57 @@ function findTimeIndex(ping_array, time_id) {
   return ping_array.slice(0,index);
 };
 
-/*
-console.log("Store map: ");
-console.log(store_map);
-console.log("Time map: ");
-console.log(time_map);
-*/
+function findBarData(data_array,store_map) {
+  const return_data = {
+    counts : null,
+    colors : null,
+    names : null,
+  }
+
+  const counter = [0,0,0,0,0,0,0,0,0,0]
+  data_array.forEach(function(element){
+    let store_id = element[2];
+    counter[store_id] = counter[store_id] + 1
+  });
+
+
+  let order_rank = counter.slice()
+  order_rank.sort(function sortNumber(a,b) {
+    return b - a;
+  })
+
+
+  const color_list = [];
+  const count_list = [];
+  const name_list = [];
+
+  for (var i = 0; i < counter.length; i++){
+      let current_val = order_rank[i];
+      let counter_index = counter.findIndex(ping => ping == current_val);
+      
+      color_list.push(store_map[counter_index][1])
+      count_list.push(current_val)
+      name_list.push(store_map[counter_index][0])
+  };
+ 
+  return_data.counts = count_list
+  return_data.colors = ['rgba(255,99,132,0.2)']
+  return_data.names = name_list
+
+  return return_data;
+
+};
+
+function getRandomBarData(){
+  const return_data = {
+    counts : Array.from({length: 10}, () => Math.floor(Math.random() * 10)),
+    colors : ['rgba(255,99,132,0.2)','rgba(105,50,190,1)'],
+    names : ['January', 'February', 'March', 'April', 'May', 'June', 'July','August','September','October']
+  }
+
+  return return_data;
+};
+
 
 class App extends Component {
   constructor(props){
@@ -56,7 +101,12 @@ class App extends Component {
       width:500,
       height:500
     },
-    data: findTimeIndex(json_data.data, 30),
+    data: null,
+    barData: {
+      counts : [1000,900,800,700,600,500,400,300,200,100],
+      colors : ['rgba(255,99,132,0.2)','rgba(105,50,190,1)'],
+      names : ['January', 'February', 'March', 'April', 'May', 'June', 'July','August','September','October']
+    },
     settings: {
       time:30,
       showStores: true
@@ -68,7 +118,10 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this._resize.bind(this));
+    
     this._resize();
+    
+    
   }
 
   _resize() {
@@ -85,17 +138,24 @@ class App extends Component {
 }
 
   _updateSettings(settings) {
-    console.log("Updating time, showing all points up until: "+ time_map[settings.time]);
+    console.log("Time value changed to "+ time_map[settings.time] + "from : " );
     let new_data = findTimeIndex(json_data.data, settings.time);
+    let new_barData = findBarData(new_data,store_map);    
+
     this.setState({
       settings : {...this.state.settings, ...settings},
-      data : new_data
+      data : new_data,
+      barData : new_barData
     });
     
-}
+  }
+
+  
 
   render() {
-    const {viewport, data, settings} = this.state;
+    const {viewport, data, settings, barData} = this.state;
+    console.log('RENDER IN APP');
+    console.log(this.state);
     return (
       <div>  
         <MapGL
@@ -128,6 +188,8 @@ class App extends Component {
           onChange={this._updateSettings} 
           store_map={this.store_map} 
           time_map={this.time_map} />
+
+          <BarChart input_data={this.state.barData}/>
         </div>
       </div>
     );
