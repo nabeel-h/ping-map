@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import DeckGL, {ScatterplotLayer} from 'deck.gl';
 
-
 class DeckGLOverlay extends Component {
     static get defaultViewport() {
         return {
@@ -15,7 +14,7 @@ class DeckGLOverlay extends Component {
     }
 
     render() {
-        const {viewport, data, radius, pointColor, showScatterLayer} = this.props;
+        const {viewport, data, radius, storeMap, showScatterLayer} = this.props;
 
         if (!data) {
             return null;
@@ -28,7 +27,9 @@ class DeckGLOverlay extends Component {
             visible: showScatterLayer,
             radiusScale: radius,
             radiusMinPixels: 1.0,
-            getColor: d => pointColor[d[2]][1],
+            pickable: true,
+            onHover: info =>  { if (info.object != null) {storeMap[info.object[2]][0]} },
+            getColor: d => storeMap[d[2]][1],
             getPosition: d => [d[0][0],d[0][1]],
             getRadius: d => 2.5,
         });

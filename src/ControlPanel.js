@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import json_data from './top_10_coords.json';
-import range from 'lodash/range';
-import BarChart from './barChart.js';
 
-const store_map = json_data.store_map;
 const time_map = json_data.time_map;
 
 class ControlPanel extends Component {
@@ -38,7 +35,7 @@ class ControlPanel extends Component {
           value={this.props.settings[key] || 0}
           onChange={e => this.props.onChange({[key]: e.target.value})}
           />
-        <p align="center">{time_map[this.props.settings[key]]}</p>
+        <p align="center">CURRENT TIME : {time_map[this.props.settings[key]]}</p>
       </div>
     );
   }

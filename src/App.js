@@ -9,6 +9,7 @@ import BarChart from './barChart.js';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibmFiZGV2IiwiYSI6ImNqZXJya25ocTBseGozM3A0Nnh4ZzU5b3kifQ.0g6m5X8PUkXrdZk3Qe4Lpw'; // eslint-disable-line
 
+// List of 10 colors for our 10 store chains.
 var colors = [
   [230, 25, 75],
   [60, 180, 75],
@@ -25,7 +26,7 @@ var colors = [
 const store_map = json_data.store_map;
 const time_map = json_data.time_map;
 
-
+// Maps colors from list above to each store in store_map
 var store_iterator = 0;
 Object.keys(store_map).forEach(function(key) {
   const store_name = store_map[key];
@@ -33,14 +34,16 @@ Object.keys(store_map).forEach(function(key) {
   store_iterator = store_iterator + 1;
 });
 
-
+// For slicing up data set according to time
 function findTimeIndex(data, intTime) {
   const index = data.findIndex(ping => ping[1] == intTime);
-  console.log("This is the slicing index: " + index);
+  console.log("Generating data according to time index: " + index);
   return data.slice(0,index);
 };
 
+// For creating summary data for bar plot
 function findBarData(data,store_map) {
+  console.log("Generating bar data");
   let preparedData = {
     counts : [],
     labels: [],
@@ -55,7 +58,6 @@ function findBarData(data,store_map) {
     counter[store_id] = counter[store_id] + 1
   });
 
-
   // Sorts data by ascending
   let sortedAscData = counter.slice()
   sortedAscData.sort(function sortNumber(a,b) {
@@ -64,10 +66,10 @@ function findBarData(data,store_map) {
 
   // Using the items ranks from sorting, fill up preparedData
   for (var i = 0; i < counter.length; i++){
-      let storeCount = parseInt(sortedAscData[i]);
+      let storeCount = parseInt(sortedAscData[i],10);
       // Because Counter is still unsorted, we look up that index position
       // since it maps correcly with store_map input
-      let counter_index = counter.findIndex(ping => ping == storeCount);
+      let counter_index = counter.findIndex(store => store == storeCount);
       let label = store_map[counter_index][0];
       let color = store_map[counter_index][1];
 
@@ -83,17 +85,6 @@ function findBarData(data,store_map) {
 
   return preparedData;
 };
-
-function getRandomBarData(){
-  const return_data = {
-    counts : Array.from({length: 10}, () => Math.floor(Math.random() * 10)),
-    colors : ['rgba(255,99,132,0.2)','rgba(105,50,190,1)'],
-    names : ['January', 'February', 'March', 'April', 'May', 'June', 'July','August','September','October']
-  }
-
-  return return_data;
-};
-
 
 class App extends Component {
   constructor(props){
@@ -112,10 +103,11 @@ class App extends Component {
       }
     };
     autobind(this);
-      
   }
 
   componentWillMount(){
+    // Sets init state data in Will mount so data will be passed properly
+    // from state to props (state is 1 step behind)
     this.initStateData();
   }
 
@@ -124,6 +116,7 @@ class App extends Component {
     this._resize();
   }
 
+  // sets initial state data
   initStateData = (data) => {
     let initData = findTimeIndex(json_data.data, 1);
     let initBarData = findBarData(initData, store_map);
@@ -132,7 +125,6 @@ class App extends Component {
       data: initData,
       barData : initBarData
     });
-
   }
 
   _resize() {
@@ -149,7 +141,13 @@ class App extends Component {
 }
 
   _updateSettings(settings) {
-    console.log("Slider value changed:" );
+    console.log("Settings changed!");
+    console.log(settings);
+
+    if (!settings.time) {
+      settings.time = this.state.settings.time
+    };
+
     let new_data = findTimeIndex(json_data.data, settings.time);
     let new_barData = findBarData(new_data,store_map);    
 
@@ -180,17 +178,18 @@ class App extends Component {
             viewport = {viewport}
             data = {data}
             radius = {30}
-            pointColor = {store_map}
+            storeMap = {store_map}
             showScatterLayer = {settings.showStores}
           />
          </MapGL>
 
         <div className="control-panel">
           <h1>Ping Mapper</h1>
-          <p>Visualize phone pings between {time_map[0]} to {time_map[time_map.length-1]}.</p>
+          <p>Tool for visualizing phone pings. Drag the time slider below.</p>
           <ul>
-            <li>There are a total of {json_data.data.length} pings by the end of the period.</li>
-            <li>There are {store_map.length} unique store chains.</li>
+            <li>Between period {time_map[0]} to {time_map[time_map.length-1]}</li>
+            <li>There is a total of {json_data.data.length} pings in this period.</li>
+            <li>The pings are each attributed to one of {store_map.length} unique store chains in this visualization.</li>
 
           </ul>
           <hr />

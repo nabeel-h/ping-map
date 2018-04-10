@@ -48,8 +48,6 @@ export default class BarChart extends Component {
                 }
             ]
             }
-        
-
         return preparedData
     }
 
@@ -59,8 +57,8 @@ export default class BarChart extends Component {
                 <h2>Ping Counter</h2>
                 <HorizontalBar
                 data={barData}
-                width={100}
-                height={90}    
+                width={140}
+                height={120}    
                 options={{
                     maintainAspectRatio: true,
                     scaleBeginAtZero : true,
