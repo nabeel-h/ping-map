@@ -12,13 +12,22 @@ body {
     overflow: hidden;
   }
 
+.bar-chart {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 500px;
+  background: rgba(40,40,40,0.8);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
 
 .control-panel {
     position: fixed;
     top: 20px;
     left: 20px;
     padding: 12px;
-    width: 400px;
+    width: 300px;
     background: rgba(40,40,40,0.8);
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
   }

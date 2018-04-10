@@ -34,51 +34,54 @@ Object.keys(store_map).forEach(function(key) {
 });
 
 
-function findTimeIndex(ping_array, time_id) {
-  const index = ping_array.findIndex(ping => ping[1] == time_id);
+function findTimeIndex(data, intTime) {
+  const index = data.findIndex(ping => ping[1] == intTime);
   console.log("This is the slicing index: " + index);
-  return ping_array.slice(0,index);
+  return data.slice(0,index);
 };
 
-function findBarData(data_array,store_map) {
-  const return_data = {
-    counts : null,
-    colors : null,
-    names : null,
+function findBarData(data,store_map) {
+  let preparedData = {
+    counts : [],
+    labels: [],
+    colors: []
   }
 
+  // Array of 10 stores. Find better way to create it.
   const counter = [0,0,0,0,0,0,0,0,0,0]
-  data_array.forEach(function(element){
+  data.forEach(function(element){
+    // Iterates over list, and counts store_ids for counter
     let store_id = element[2];
     counter[store_id] = counter[store_id] + 1
   });
 
 
-  let order_rank = counter.slice()
-  order_rank.sort(function sortNumber(a,b) {
-    return b - a;
+  // Sorts data by ascending
+  let sortedAscData = counter.slice()
+  sortedAscData.sort(function sortNumber(a,b) {
+      return b - a;
   })
 
-
-  const color_list = [];
-  const count_list = [];
-  const name_list = [];
-
+  // Using the items ranks from sorting, fill up preparedData
   for (var i = 0; i < counter.length; i++){
-      let current_val = order_rank[i];
-      let counter_index = counter.findIndex(ping => ping == current_val);
-      
-      color_list.push(store_map[counter_index][1])
-      count_list.push(current_val)
-      name_list.push(store_map[counter_index][0])
-  };
- 
-  return_data.counts = count_list
-  return_data.colors = ['rgba(255,99,132,0.2)']
-  return_data.names = name_list
+      let storeCount = parseInt(sortedAscData[i]);
+      // Because Counter is still unsorted, we look up that index position
+      // since it maps correcly with store_map input
+      let counter_index = counter.findIndex(ping => ping == storeCount);
+      let label = store_map[counter_index][0];
+      let color = store_map[counter_index][1];
 
-  return return_data;
+      let preparedCounts = preparedData.counts;
+      let preparedLabels = preparedData.labels;
+      let preparedColors = preparedData.colors;
 
+      // Append each list with row data
+      preparedCounts.push(storeCount);
+      preparedLabels.push(label);
+      preparedColors.push(color);
+  }
+
+  return preparedData;
 };
 
 function getRandomBarData(){
@@ -102,13 +105,9 @@ class App extends Component {
       height:500
     },
     data: null,
-    barData: {
-      counts : [1000,900,800,700,600,500,400,300,200,100],
-      colors : ['rgba(255,99,132,0.2)','rgba(105,50,190,1)'],
-      names : ['January', 'February', 'March', 'April', 'May', 'June', 'July','August','September','October']
-    },
+    barData: null,
     settings: {
-      time:30,
+      time:1,
       showStores: true
       }
     };
@@ -116,12 +115,24 @@ class App extends Component {
       
   }
 
+  componentWillMount(){
+    this.initStateData();
+  }
+
   componentDidMount() {
     window.addEventListener('resize', this._resize.bind(this));
-    
     this._resize();
-    
-    
+  }
+
+  initStateData = (data) => {
+    let initData = findTimeIndex(json_data.data, 1);
+    let initBarData = findBarData(initData, store_map);
+
+    this.setState({
+      data: initData,
+      barData : initBarData
+    });
+
   }
 
   _resize() {
@@ -138,7 +149,7 @@ class App extends Component {
 }
 
   _updateSettings(settings) {
-    console.log("Time value changed to "+ time_map[settings.time] + "from : " );
+    console.log("Slider value changed:" );
     let new_data = findTimeIndex(json_data.data, settings.time);
     let new_barData = findBarData(new_data,store_map);    
 
@@ -147,6 +158,7 @@ class App extends Component {
       data : new_data,
       barData : new_barData
     });
+
     
   }
 
@@ -154,8 +166,8 @@ class App extends Component {
 
   render() {
     const {viewport, data, settings, barData} = this.state;
-    console.log('RENDER IN APP');
-    console.log(this.state);
+    console.log("This is what's being passed as barData:");
+    console.log(barData);
     return (
       <div>  
         <MapGL
@@ -188,9 +200,11 @@ class App extends Component {
           onChange={this._updateSettings} 
           store_map={this.store_map} 
           time_map={this.time_map} />
-
-          <BarChart input_data={this.state.barData}/>
+          <div>
+            <BarChart data={this.state.barData}/>
+          </div>
         </div>
+        
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import {Bar} from "react-chartjs-2";
+import {HorizontalBar} from "react-chartjs-2";
+import 'chartjs-plugin-datalabels';
 
 export default class BarChart extends Component {
     constructor(props) {
@@ -9,45 +10,68 @@ export default class BarChart extends Component {
         }
     }
 
-    _createDataObject(input_bars) {
-        const new_data = {
-            labels: input_bars.names,
-        datasets: [
-            {
-            label: 'My First dataset',
-            backgroundColor: input_bars.colors,
-            borderColor: 'rgba(255,99,132,1)',
-            borderWidth: 1,
-            hoverBackgroundColor: 'rgba(255,99,132,0.4)',
-            hoverBorderColor: 'rgba(255,99,132,1)',
-            data: input_bars.counts
-                }
-            ]
-        }
-
-        return new_data
-
+    componentWillMount() {
     }
 
     componentDidMount() {
-        let new_data = this._createDataObject([100,30,40,30,200,70,90,80,100,100])
-        this.setState(
-            {
-                barData : null
+    }
+
+    refactorData(data) {
+        let dataCounts = data.counts
+        let dataLabels = data.labels
+        let dataColors = data.colors
+
+        // If weird bug when slider is at time position 0 occurs then
+        // set barData inputs to empty data
+        if (dataLabels[0] === dataLabels[1]) {
+            dataLabels = []
+            dataCounts = []
+            dataColors = []
+        }
+
+        // Prepare the colors array for bar data
+        let preparedColors = []
+        dataColors.forEach(function(element){
+            let colorString = "rgba("
+            let colorValue = String(element[0]) +"," + String(element[1]) + "," + String(element[2]) + ",0.5)"
+            preparedColors.push(colorString.concat(colorValue))
+        })
+
+        let preparedData = {
+            labels: dataLabels,
+            datasets: [
+                    {
+                    label: "Top 10 Ping Counts",
+                    data : dataCounts,
+                    backgroundColor : preparedColors,
+                    borderWidth: 1
+                }
+            ]
             }
-        )
+        
+
+        return preparedData
     }
 
     _renderBar(barData) {
         return (
             <div>
-                <h2>Bar</h2>
-                <Bar
+                <h2>Ping Counter</h2>
+                <HorizontalBar
                 data={barData}
                 width={100}
-                height={70}    
+                height={90}    
                 options={{
-                    maintainAspectRatio: true
+                    maintainAspectRatio: true,
+                    scaleBeginAtZero : true,
+                    plugins: {
+                        datalabels: {
+                            color: 'black'
+                        }
+                    },
+                    legend : {
+                        display: false
+                    }
                 }}
                 />
             </div>
@@ -55,12 +79,13 @@ export default class BarChart extends Component {
     }
 
     render() {
-
-        let bar_data = this._createDataObject(this.props.input_data);
-
+        
+        let barData = this.refactorData(this.props.data);
+        console.log("Render data: ");
+        console.log(barData);
         return (
             <div>
-            {this._renderBar(bar_data)}
+            {this._renderBar(barData)}
             </div>
    )}
 
