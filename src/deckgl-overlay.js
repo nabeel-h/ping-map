@@ -28,7 +28,7 @@ class DeckGLOverlay extends Component {
             radiusScale: radius,
             radiusMinPixels: 1.0,
             pickable: true,
-            onHover: info =>  { if (info.object != null) {storeMap[info.object[2]][0]} },
+            onHover: info =>  { if (info.object != null) {console.log(storeMap[info.object[2]][0])} },
             getColor: d => storeMap[d[2]][1],
             getPosition: d => [d[0][0],d[0][1]],
             getRadius: d => 2.5,
