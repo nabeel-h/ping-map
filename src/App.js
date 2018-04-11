@@ -3,7 +3,7 @@ import autobind from 'react-autobind';
 import ControlPanel from './ControlPanel';
 import MapGL from 'react-map-gl';
 import DeckGLOverlay from './deckgl-overlay.js';
-import json_data from './top_10_coords.json';
+import json_data from './data/top_10_coords.json';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import BarChart from './barChart.js';
 
@@ -198,7 +198,7 @@ class App extends Component {
           settings={settings} 
           onChange={this._updateSettings} 
           store_map={this.store_map} 
-          time_map={this.time_map} />
+          time_map={time_map} />
           <div>
             <BarChart data={this.state.barData}/>
           </div>

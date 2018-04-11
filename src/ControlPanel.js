@@ -1,15 +1,24 @@
 import React, { Component } from 'react';
-import json_data from './top_10_coords.json';
-
-const time_map = json_data.time_map;
 
 class ControlPanel extends Component {
   constructor(props){
     super(props);
     this.state = {
-      time_map: 'what'
+      timeMap: null
     }
   }
+
+  componentWillMount(){
+    this.setState({
+      timeMap : this.props.time_map
+    })
+  }
+
+  componentDidMount() {
+
+  }
+
+
 
   _renderToggle(key, displayName) {
     return (
@@ -25,6 +34,9 @@ class ControlPanel extends Component {
   }
 
   _renderSlider(key, displayName, props) {
+    let timeMap = this.state.timeMap;
+    console.log("RENDER SLIDER");
+    console.log(timeMap);
     
     return (
       <div className = "input">
@@ -35,13 +47,15 @@ class ControlPanel extends Component {
           value={this.props.settings[key] || 0}
           onChange={e => this.props.onChange({[key]: e.target.value})}
           />
-        <p align="center">CURRENT TIME : {time_map[this.props.settings[key]]}</p>
+        <p align="center">CURRENT TIME : {timeMap[this.props.settings[key]]}</p>
       </div>
     );
   }
 
   render() {
-    const slider_max = time_map.length - 1;
+    let timeMap = this.state.timeMap;
+
+    let slider_max = timeMap.length - 1;
     return (
       <div>
         {this._renderToggle('showStores', 'Show pings')}
